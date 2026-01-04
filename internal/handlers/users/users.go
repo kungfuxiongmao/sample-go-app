@@ -1,12 +1,13 @@
 package users
 
 import (
-	"encoding/json"
-	"fmt"
+	"github.com/kungfuxiongmao/sample-go-app/internal/models"
+	"github.com/kungfuxiongmao/sample-go-app/internal/middleware"
+	"github.com/gin-gonic/gin"
+	"github.com/kungfuxiongmao/sample-go-app/internal/api"
 	"net/http"
 
-	"github.com/CVWO/sample-go-app/internal/api"
-	users "github.com/CVWO/sample-go-app/internal/dataaccess"
+	
 	"github.com/CVWO/sample-go-app/internal/database"
 	"github.com/pkg/errors"
 )
@@ -20,27 +21,19 @@ const (
 	ErrEncodeView              = "Failed to retrieve users in %s"
 )
 
-func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
-	db, err := database.GetDB()
-
+func CreateUser(c *gin.Context) (int, error) {
+	var u models.User
+	if err := c.ShouldBindJSON(&u); err != nil {
+    	FailMsg(c, http.StatusInternalServerError, 1, err)
+		return
+    }
+	hashed, err := bcrypt.GenerateFromPassword(u.Password, bcrypt.DefaultCost,)
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrieveDatabase, ListUsers))
+		FailMsg(c, http.StatusInternalServerError, 2, err)
+		return
 	}
-
-	users, err := users.List(db)
-	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrieveUsers, ListUsers))
-	}
-
-	data, err := json.Marshal(users)
-	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf(ErrEncodeView, ListUsers))
-	}
-
-	return &api.Response{
-		Payload: api.Payload{
-			Data: data,
-		},
-		Messages: []string{SuccessfulListUsersMessage},
-	}, nil
+	db := middleware.GetDB(c)
+	//get id and write into db, return id
 }
+
+func CheckUser()
