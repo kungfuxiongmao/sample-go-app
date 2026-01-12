@@ -1,8 +1,6 @@
 package dataaccess
 
 import (
-	"github.com/kungfuxiongmao/sample-go-app/internal/database"
-	"github.com/kungfuxiongmao/sample-go-app/internal/models"
 )
 
 type LoginReq struct {

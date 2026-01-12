@@ -2,7 +2,6 @@ package api
 //denotes HTTP reply structure
 
 import (
-	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )

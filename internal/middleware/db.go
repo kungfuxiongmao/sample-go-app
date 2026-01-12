@@ -8,7 +8,7 @@ import (
 
 func DBToContext(db *gorm.DB) gin.HandlerFunc {
 	if db == nil {
-		return 
+		return nil
 	}
 	return func (c *gin.Context) {
 		c.Set("db", db)
@@ -16,7 +16,7 @@ func DBToContext(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-function GetDB(c *gin.Context) (*gorm.DB, error) {
+func GetDB(c *gin.Context) (*gorm.DB, error) {
 	extr, exists := c.Get("db")
 	if !exists {
 		return nil, fmt.Errorf("Database does not exist")

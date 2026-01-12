@@ -1,11 +1,13 @@
 package database
 
 import (
+	"fmt"
+	"os"
+
+	"github.com/kungfuxiongmao/sample-go-app/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"fmt"
 )
-
 
 func GetConnector() string {
 	host := os.Getenv("DB_HOST")
@@ -14,8 +16,8 @@ func GetConnector() string {
 	password := os.Getenv("DB_PASS")
 	dbname := os.Getenv("DB_NAME")
 	ssl := os.Getenv("DB_SSL")
-	return fmt.Sprintf("host=%s port=%d sslmode=%s user=%s password=%s dbname=%s", 
-						host, port, ssl, user, password, dbname)
+	return fmt.Sprintf("host=%s port=%v sslmode=%s user=%s password=%s dbname=%s",
+		host, port, ssl, user, password, dbname)
 }
 
 func GetDB() (*gorm.DB, error) {
@@ -26,12 +28,14 @@ func GetDB() (*gorm.DB, error) {
 	}
 	sqlDB, err := db.DB()
 	if err != nil {
-        return nil, fmt.Errorf("failed to get sql.DB from GORM DB: %v", err)
-    }
-    if err := sqlDB.Ping(); err != nil {
-        return nil, fmt.Errorf("failed to ping DB: %v", err)
-    }
-	db.AutoMigrate(&User{}) //include automigrate
+		return nil, fmt.Errorf("failed to get sql.DB from GORM DB: %v", err)
+	}
+	if err := sqlDB.Ping(); err != nil {
+		return nil, fmt.Errorf("failed to ping DB: %v", err)
+	}
+	err = db.AutoMigrate(&models.User{}) //include automigrate
+	if err != nil {
+		return nil, fmt.Errorf("failed to migrate", err)
+	}
 	return db, nil
 }
-
