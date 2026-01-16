@@ -1,16 +1,17 @@
 package middleware
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"fmt"
 )
 
 func DBToContext(db *gorm.DB) gin.HandlerFunc {
 	if db == nil {
 		return nil
 	}
-	return func (c *gin.Context) {
+	return func(c *gin.Context) {
 		c.Set("db", db)
 		c.Next()
 	}
