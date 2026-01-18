@@ -1,9 +1,11 @@
 package api
+
 //denotes HTTP reply structure
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Payload struct {
@@ -11,26 +13,26 @@ type Payload struct {
 	Data any `json:"data,omitempty"` //Actual Data
 }
 
-//Response denotes the structure of the JSON response template
+// Response denotes the structure of the JSON response template
 type Response struct {
-	Payload   *Payload  `json:"payload,omitempty"`
+	Payload   *Payload `json:"payload,omitempty"`
 	Messages  []string `json:"messages,omitempty"` //Error Msg
-	ErrorCode int      `json:"errorCode,omitempty"` 
+	ErrorCode int      `json:"errorCode,omitempty"`
 }
 
-//Use this function to return data without needing metadata
+// Use this function to return data without needing metadata
 func SuccessMsg(c *gin.Context, data any, msgs ...string) {
-	c.JSON(http.StatusOK, 
-		Response {Messages: msgs,
-					Payload: &Payload {
-						Data: data, 
-		}, 
-	})
+	c.JSON(http.StatusOK,
+		Response{Messages: msgs,
+			Payload: &Payload{
+				Data: data,
+			},
+		})
 }
 
 func FailMsg(c *gin.Context, status, code int, msgs ...string) {
-	c.JSON(status, Response {
-		Messages: msgs, 
+	c.JSON(status, Response{
+		Messages:  msgs,
 		ErrorCode: code,
 	})
 }

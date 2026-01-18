@@ -3,16 +3,12 @@ package main
 import (
 	"log"
 
-	"github.com/joho/godotenv"
 	"github.com/kungfuxiongmao/sample-go-app/internal/database"
+	_ "github.com/kungfuxiongmao/sample-go-app/internal/init"
 	"github.com/kungfuxiongmao/sample-go-app/internal/router"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal(err)
-	}
 	db, err := database.GetDB()
 	if err != nil {
 		log.Fatalf("Failed to get db: %v\n", err)
