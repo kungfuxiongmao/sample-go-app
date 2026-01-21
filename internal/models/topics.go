@@ -2,10 +2,10 @@ package models
 
 import "time"
 
-type Topics struct {
-	ID          uint   `gorm:"primaryKey"`
-	TopicName   string `gorm:"not null"`
+type Topic struct {
+	ID          uint   `gorm:"primaryKey" json:"topicid"`
+	TopicName   string `gorm:"not null" json:"topicname"`
 	User        User   `gorm:"foreignKey:CreatedBy"`
 	CreatedBy   uint
-	DateCreated time.Time `gorm:"autoCreateTime"`
+	DateCreated time.Time `gorm:"autoCreateTime" json:"createdon"`
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -24,14 +25,14 @@ func CreateToken(userID uint, c *gin.Context) (string, error) {
 	}
 	isProd := os.Getenv("GO_ENV") == "production"
 	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie("Auth", tokenString, 24*10*3600, "/", "", isProd, false)
+	c.SetCookie("Auth", tokenString, 24*10*3600, "/", "", isProd, true)
 
 	return tokenString, nil
 }
 
 func ClearToken(c *gin.Context) {
 	isProd := os.Getenv("GO_ENV") == "production"
-	c.SetCookie("Auth", "", -1, "/", "", isProd, false)
+	c.SetCookie("Auth", "", -1, "/", "", isProd, true)
 }
 
 func RequireAuth() gin.HandlerFunc {
@@ -63,13 +64,13 @@ func RequireAuth() gin.HandlerFunc {
 
 		// 4. Extract the Claims to get the UserID
 		if claims, ok := token.Claims.(*jwt.RegisteredClaims); ok {
-			// Success! The token is valid.
-
-			// We stored the UserID in the 'Subject' field.
-			// Save it to the context so the next handler can access it.
-			c.Set("userID", claims.Subject)
-
-			// Continue to the next handler
+			userid, err := strconv.Atoi(claims.Subject)
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid ID"})
+				return
+			}
+			//Stores UserID as an uint to use for DB
+			c.Set("userID", uint(userid))
 			c.Next()
 		} else {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})

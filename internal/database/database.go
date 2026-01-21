@@ -33,7 +33,7 @@ func GetDB() (*gorm.DB, error) {
 	if err := sqlDB.Ping(); err != nil {
 		return nil, fmt.Errorf("failed to ping DB: %v", err)
 	}
-	err = db.AutoMigrate(&models.User{}, &models.Topics{}) //include automigrate
+	err = db.AutoMigrate(&models.User{}, &models.Topic{}) //include automigrate
 	if err != nil {
 		return nil, fmt.Errorf("failed to migrate", err)
 	}

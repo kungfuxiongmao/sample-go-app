@@ -31,7 +31,7 @@ func SuccessMsg(c *gin.Context, data any, msgs ...string) {
 }
 
 func FailMsg(c *gin.Context, status, code int, msgs ...string) {
-	c.JSON(status, Response{
+	c.AbortWithStatusJSON(status, Response{
 		Messages:  msgs,
 		ErrorCode: code,
 	})
