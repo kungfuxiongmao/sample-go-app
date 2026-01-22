@@ -95,8 +95,8 @@ func UpdateTopic(c *gin.Context) {
 		api.FailMsg(c, http.StatusInternalServerError, CodeGetUserFail, "failed to retreive user ID")
 		return
 	}
-	// Only authorised posts will be taken
-	result := db.Where("id = ? AND created_by = ?", t.ID, userid).First(&topic)
+	// Only authorised topics will be taken
+	result := db.WithContext(c.Request.Context()).Where("id = ? AND created_by = ?", t.ID, userid).First(&topic)
 	if result.Error != nil {
 		api.FailMsg(c, http.StatusNotFound, CodeDatabaseFail, "topic not found or you do not have permission")
 		return
@@ -128,15 +128,14 @@ func DeleteTopic(c *gin.Context) {
 		api.FailMsg(c, http.StatusInternalServerError, CodeGetUserFail, "failed to retreive user ID")
 		return
 	}
-	result := db.Where("id = ? AND created_by = ?", t.ID, userid).First(&topic)
+	result := db.WithContext(c.Request.Context()).Where("id = ? AND created_by = ?", t.ID, userid).First(&topic)
 	if result.Error != nil {
 		api.FailMsg(c, http.StatusNotFound, CodeDatabaseFail, "failed to match record or you do not have permission")
 		return
 	}
-	if err := db.Delete(&topic).Error; err != nil {
+	if err := db.WithContext(c.Request.Context()).Delete(&topic).Error; err != nil {
 		api.FailMsg(c, http.StatusInternalServerError, CodeDatabaseFail, "failed to delete")
 		return
 	}
 	api.SuccessMsg(c, nil, "successfully deleted topic")
-
 }
