@@ -15,6 +15,7 @@ func GetRoutes(r *gin.Engine) {
 	{
 		protected.GET("/topics", topics.GetTopics)
 		protected.POST("/topics", topics.CreateTopic)
-		// protected.POST
+		protected.PUT("/topics", topics.UpdateTopic)
+		protected.DELETE("/topics", topics.DeleteTopic)
 	}
 }

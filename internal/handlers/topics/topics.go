@@ -73,6 +73,15 @@ func GetTopics(c *gin.Context) {
 func UpdateTopic(c *gin.Context) {
 	var t dataaccess.UpdateTopic
 	var topic models.Topic
+	//Bind input
+	if err := c.ShouldBindJSON(&t); err != nil {
+		api.FailMsg(c, http.StatusBadRequest, CodeBindFailed, err.Error())
+		return
+	}
+	if t.NewName == "" {
+		api.FailMsg(c, http.StatusBadRequest, CodeInvalidInput, "empty title")
+		return
+	}
 	db, err := middleware.GetDB(c)
 	if err != nil {
 		api.FailMsg(c, http.StatusInternalServerError, CodeDatabaseFail, "database not available")
@@ -84,10 +93,48 @@ func UpdateTopic(c *gin.Context) {
 		api.FailMsg(c, http.StatusInternalServerError, CodeGetUserFail, "failed to retreive user ID")
 		return
 	}
-	result := db.Where("id = ? AND createdBy = ?", t.ID, userid).First(&topic)
+	// Only authorised posts will be taken
+	result := db.Where("id = ? AND created_by = ?", t.ID, userid).First(&topic)
 	if result.Error != nil {
 		api.FailMsg(c, http.StatusNotFound, CodeDatabaseFail, "topic not found or you do not have permission")
 		return
 	}
+	topic.TopicName = t.NewName
+	if err := db.Save(&topic).Error; err != nil {
+		api.FailMsg(c, http.StatusInternalServerError, CodeDatabaseFail, err.Error())
+		return
+	}
+	api.SuccessMsg(c, gin.H{"id": topic.ID, "name": topic.TopicName}, "updated topic name")
+}
+
+func DeleteTopic(c *gin.Context) {
+	var t dataaccess.DeleteTopic
+	var topic models.Topic
+	//Bind input
+	if err := c.ShouldBindJSON(&t); err != nil {
+		api.FailMsg(c, http.StatusBadRequest, CodeBindFailed, err.Error())
+		return
+	}
+	db, err := middleware.GetDB(c)
+	if err != nil {
+		api.FailMsg(c, http.StatusInternalServerError, CodeDatabaseFail, "database not available")
+		return
+	}
+	//Get user
+	userid, exists := c.Get("userID")
+	if !exists {
+		api.FailMsg(c, http.StatusInternalServerError, CodeGetUserFail, "failed to retreive user ID")
+		return
+	}
+	result := db.Where("id = ? AND created_by = ?", t.ID, userid).First(&topic)
+	if result.Error != nil {
+		api.FailMsg(c, http.StatusNotFound, CodeDatabaseFail, "failed to match record or you do not have permission")
+		return
+	}
+	if err := db.Delete(&topic).Error; err != nil {
+		api.FailMsg(c, http.StatusInternalServerError, CodeDatabaseFail, "failed to delete")
+		return
+	}
+	api.SuccessMsg(c, nil, "successfully deleted topic")
 
 }
