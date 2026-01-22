@@ -1,5 +1,7 @@
 package topics
 
+//Add Context for db queries
+
 import (
 	"net/http"
 

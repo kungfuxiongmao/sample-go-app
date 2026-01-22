@@ -29,7 +29,7 @@ func CreatePost(c *gin.Context) {
 	}
 	//Validate Input
 	if p.Name == "" || p.Description == "" {
-		api.FailMsg(c, http.StatusBadRequest, CodeInvalidInput, "empty title")
+		api.FailMsg(c, http.StatusBadRequest, CodeInvalidInput, "empty title or description")
 		return
 	}
 	//Get User
@@ -45,7 +45,7 @@ func CreatePost(c *gin.Context) {
 		api.FailMsg(c, http.StatusInternalServerError, CodeDatabaseFail, "database not available")
 		return
 	}
-	result := db.First(&topic, "id = ?", p.TopicID)
+	result := db.Select("id").First(&topic, "id = ?", p.TopicID)
 	if result.Error != nil {
 		api.FailMsg(c, http.StatusNotFound, CodeDatabaseFail, "topic not found")
 		return
@@ -62,4 +62,25 @@ func CreatePost(c *gin.Context) {
 		return
 	}
 	api.SuccessMsg(c, post, "post created")
+}
+
+func GetPost(c *gin.Context) {
+	var p dataaccess.FindPost
+	var post []models.Post
+	//Bind input into var
+	if err := c.ShouldBindJSON(&p); err != nil {
+		api.FailMsg(c, http.StatusBadRequest, CodeBindFailed, err.Error())
+		return
+	}
+	db, err := middleware.GetDB(c)
+	if err != nil {
+		api.FailMsg(c, http.StatusInternalServerError, CodeDatabaseFail, "database not available")
+		return
+	}
+	result := db.WithContext(c.Request.Context()).Preload("User").Where("topic_id = ?", p.TopicID).Find(&post)
+	if result.Error != nil {
+		api.FailMsg(c, http.StatusInternalServerError, CodeDatabaseFail, result.Error.Error())
+		return
+	}
+	api.SuccessMsg(c, post)
 }
