@@ -51,11 +51,6 @@ func CreateTopic(c *gin.Context) {
 		api.FailMsg(c, http.StatusInternalServerError, CodeDatabaseFail, err.Error())
 		return
 	}
-	if err := tx.Preload("User").First(&topic, topic.ID).Error; err != nil {
-		tx.Rollback()
-		api.FailMsg(c, http.StatusInternalServerError, CodeDatabaseFail, "created topic but failed to verify user data")
-		return
-	}
 	tx.Commit()
 	api.SuccessMsg(c, gin.H{"id": topic.ID, "name": topic.TopicName}, "created topic successfully")
 }
@@ -67,7 +62,7 @@ func GetTopics(c *gin.Context) {
 		api.FailMsg(c, http.StatusInternalServerError, CodeDatabaseFail, "database not available")
 		return
 	}
-	result := db.Find(&topics)
+	result := db.Preload("User").Find(&topics)
 	if result.Error != nil {
 		api.FailMsg(c, http.StatusInternalServerError, CodeDatabaseFail, result.Error.Error())
 		return
@@ -75,13 +70,24 @@ func GetTopics(c *gin.Context) {
 	api.SuccessMsg(c, topics)
 }
 
-// func UpdateTopic(c *gin.Context) {
-// 	var t dataaccess.UpdateTopic
-// 	db, err := middleware.GetDB(c)
-// 	if err != nil {
-// 		api.FailMsg(c, http.StatusInternalServerError, CodeDatabaseFail, "database not available")
-// 		return
-// 	}
-// 	result :=
+func UpdateTopic(c *gin.Context) {
+	var t dataaccess.UpdateTopic
+	var topic models.Topic
+	db, err := middleware.GetDB(c)
+	if err != nil {
+		api.FailMsg(c, http.StatusInternalServerError, CodeDatabaseFail, "database not available")
+		return
+	}
+	//Get user
+	userid, exists := c.Get("userID")
+	if !exists {
+		api.FailMsg(c, http.StatusInternalServerError, CodeGetUserFail, "failed to retreive user ID")
+		return
+	}
+	result := db.Where("id = ? AND createdBy = ?", t.ID, userid).First(&topic)
+	if result.Error != nil {
+		api.FailMsg(c, http.StatusNotFound, CodeDatabaseFail, "topic not found or you do not have permission")
+		return
+	}
 
-// }
+}
