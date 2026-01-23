@@ -16,6 +16,7 @@ func GetRoutes(r *gin.Engine) {
 	protected := r.Group("/api")
 	protected.Use(middleware.RequireAuth())
 	{
+		protected.GET("/me", users.GetProfile)
 		protected.GET("/topics", topics.GetTopics)
 		protected.POST("/topics", topics.CreateTopic)
 		protected.PUT("/topics", topics.UpdateTopic)

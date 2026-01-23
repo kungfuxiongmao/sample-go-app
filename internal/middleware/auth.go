@@ -9,6 +9,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/kungfuxiongmao/sample-go-app/internal/api"
+)
+
+const (
+	CodeCookieInvalid = 1004
 )
 
 func CreateToken(userID uint, c *gin.Context) (string, error) {
@@ -58,7 +63,7 @@ func RequireAuth() gin.HandlerFunc {
 
 		// 3. Check for parsing errors (Expired, fake signature, etc)
 		if err != nil || !token.Valid {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
+			api.FailMsg(c, http.StatusUnauthorized, 1004, "invalid or expired token")
 			return
 		}
 
@@ -66,14 +71,14 @@ func RequireAuth() gin.HandlerFunc {
 		if claims, ok := token.Claims.(*jwt.RegisteredClaims); ok {
 			userid, err := strconv.Atoi(claims.Subject)
 			if err != nil {
-				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid ID"})
+				api.FailMsg(c, http.StatusUnauthorized, 1004, "invalid id")
 				return
 			}
 			//Stores UserID as an uint to use for DB
 			c.Set("userID", uint(userid))
 			c.Next()
 		} else {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
+			api.FailMsg(c, http.StatusUnauthorized, 1004, "invalid token claims")
 		}
 	}
 }

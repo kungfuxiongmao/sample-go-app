@@ -16,19 +16,17 @@ import (
 )
 
 const (
-	// --- 1000 SERIES: INPUT ERRORS (Client Fault) ---
 	CodeBindFailed   = 1001 // JSON formatting wrong
-	CodeInvalidInput = 1002 // Empty strings, validation failed
+	CodeInvalidInput = 1002
 	CodeParamMissing = 1003 // URL parameters missing
 
-	// --- 2000 SERIES: BUSINESS LOGIC ERRORS (Client Fault) ---
 	CodeUserExists = 2001 // Duplicate username/email
-	CodeAuthFailed = 2002 // Bad password
+	CodeAuthFailed = 2002
 
-	// --- 5000 SERIES: SYSTEM ERRORS (Server Fault) ---
 	CodeDatabaseFail = 5001 // DB connection or query failed
-	CodeCryptoFail   = 5002 // Bcrypt failed
-	CodeTokenGenFail = 5003 // JWT generation failed
+	CodeCryptoFail   = 5002
+	CodeTokenGenFail = 5003
+	CodeGetUserFail  = 5004
 )
 
 func CreateUser(c *gin.Context) {
@@ -118,4 +116,13 @@ func CheckUser(c *gin.Context) {
 func Logout(c *gin.Context) {
 	middleware.ClearToken(c)
 	api.SuccessMsg(c, nil, "successfully logged out")
+}
+
+func GetProfile(c *gin.Context) {
+	userid, exists := c.Get("userID")
+	if !exists {
+		api.FailMsg(c, http.StatusInternalServerError, CodeGetUserFail, "failed to retreive user ID")
+		return
+	}
+	api.SuccessMsg(c, userid, "user is logged in")
 }
