@@ -6,7 +6,6 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/kungfuxiongmao/sample-go-app/internal/database"
-	_ "github.com/kungfuxiongmao/sample-go-app/internal/init"
 	"github.com/kungfuxiongmao/sample-go-app/internal/router"
 )
 
