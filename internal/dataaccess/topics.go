@@ -1,7 +1,7 @@
 package dataaccess
 
 type UpdateTopic struct {
-	ID      uint   `json:"topicID"`
+	ID      uint   `json:"topicId"`
 	NewName string `json:"updatedName"`
 }
 
@@ -10,5 +10,5 @@ type CreateTopic struct {
 }
 
 type DeleteTopic struct {
-	ID uint `json:"topicID"`
+	ID uint `json:"topicId"`
 }

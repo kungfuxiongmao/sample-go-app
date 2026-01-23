@@ -6,3 +6,8 @@
 # Editor
 .idea/*
 .vscode/*
+
+.air.toml
+build-errors.log
+
+tmp/
