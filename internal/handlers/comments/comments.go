@@ -47,7 +47,7 @@ func CreateComment(c *gin.Context) {
 	}
 	result := db.Select("id").First(&post, "id = ?", cm.PostID)
 	if result.Error != nil {
-		api.FailMsg(c, http.StatusNotFound, CodeDatabaseFail, "topic not found")
+		api.FailMsg(c, http.StatusNotFound, CodeDatabaseFail, "post not found")
 		return
 	}
 	//Update Comment
