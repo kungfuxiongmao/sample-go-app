@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/kungfuxiongmao/sample-go-app/internal/handlers/comments"
 	"github.com/kungfuxiongmao/sample-go-app/internal/handlers/posts"
 	"github.com/kungfuxiongmao/sample-go-app/internal/handlers/topics"
 	"github.com/kungfuxiongmao/sample-go-app/internal/handlers/users"
@@ -11,6 +12,7 @@ import (
 func GetRoutes(r *gin.Engine) {
 	r.POST("/users/login", users.CheckUser)
 	r.POST("/users/create", users.CreateUser)
+	r.POST("/logout", users.Logout)
 	protected := r.Group("/api")
 	protected.Use(middleware.RequireAuth())
 	{
@@ -23,5 +25,10 @@ func GetRoutes(r *gin.Engine) {
 		protected.POST("/posts", posts.CreatePost)
 		protected.PUT("/posts", posts.UpdatePost)
 		protected.DELETE("/posts", posts.DeletePost)
+		protected.GET("posts/:postid", comments.GetComments)
+
+		protected.POST("/comments", comments.CreateComment)
+		protected.PUT("/comments", comments.UpdateComment)
+		protected.DELETE("/comments", comments.DeleteComment)
 	}
 }

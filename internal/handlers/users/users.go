@@ -114,3 +114,8 @@ func CheckUser(c *gin.Context) {
 	}
 	api.SuccessMsg(c, gin.H{"id": user.ID, "username": user.Username, "token": tokenString}, "user authorised")
 }
+
+func Logout(c *gin.Context) {
+	middleware.ClearToken(c)
+	api.SuccessMsg(c, nil, "successfully logged out")
+}
