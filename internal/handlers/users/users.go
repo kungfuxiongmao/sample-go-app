@@ -71,7 +71,7 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 	//Create cookie to maintain login
-	tokenString, err := middleware.CreateToken(user.ID, c)
+	tokenString, err := middleware.CreateToken(user.ID, user.Username, c)
 	if err != nil {
 		api.FailMsg(c, http.StatusInternalServerError, CodeTokenGenFail, "Session creation failed")
 		return
@@ -105,7 +105,7 @@ func CheckUser(c *gin.Context) {
 		return
 	}
 
-	tokenString, err := middleware.CreateToken(user.ID, c)
+	tokenString, err := middleware.CreateToken(user.ID, user.Username, c)
 	if err != nil {
 		api.FailMsg(c, http.StatusInternalServerError, CodeTokenGenFail, "Session creation failed")
 		return
@@ -124,5 +124,10 @@ func GetProfile(c *gin.Context) {
 		api.FailMsg(c, http.StatusInternalServerError, CodeGetUserFail, "failed to retreive user ID")
 		return
 	}
-	api.SuccessMsg(c, userid, "user is logged in")
+	username, ok := c.Get("username")
+	if !ok {
+		api.FailMsg(c, http.StatusInternalServerError, CodeGetUserFail, "failed to retreive user ID")
+		return
+	}
+	api.SuccessMsg(c, gin.H{"id": userid, "username": username}, "user is logged in")
 }

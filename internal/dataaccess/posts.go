@@ -17,5 +17,5 @@ type DeletePost struct {
 }
 
 type FindPost struct {
-	TopicID uint `json:"topicId"`
+	TopicID uint `uri:"topicid" binding:"required"`
 }

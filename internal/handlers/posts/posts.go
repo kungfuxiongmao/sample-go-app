@@ -8,6 +8,7 @@ import (
 	"github.com/kungfuxiongmao/sample-go-app/internal/dataaccess"
 	"github.com/kungfuxiongmao/sample-go-app/internal/middleware"
 	"github.com/kungfuxiongmao/sample-go-app/internal/models"
+	"gorm.io/gorm"
 )
 
 const (
@@ -67,9 +68,8 @@ func CreatePost(c *gin.Context) {
 func GetPost(c *gin.Context) {
 	var p dataaccess.FindPost
 	var post []models.Post
-	//Bind input into var
-	if err := c.ShouldBindJSON(&p); err != nil {
-		api.FailMsg(c, http.StatusBadRequest, CodeBindFailed, err.Error())
+	if err := c.ShouldBindUri(&p); err != nil {
+		api.FailMsg(c, http.StatusBadRequest, CodeInvalidInput, "invalid topic ID")
 		return
 	}
 	db, err := middleware.GetDB(c)
@@ -77,7 +77,7 @@ func GetPost(c *gin.Context) {
 		api.FailMsg(c, http.StatusInternalServerError, CodeDatabaseFail, "database not available")
 		return
 	}
-	result := db.WithContext(c.Request.Context()).Preload("User").Where("topic_id = ?", p.TopicID).Find(&post)
+	result := db.Debug().WithContext(c.Request.Context()).Where("topic_id = ?", p.TopicID).Preload("Topic").Preload("User").Find(&post)
 	if result.Error != nil {
 		api.FailMsg(c, http.StatusInternalServerError, CodeDatabaseFail, result.Error.Error())
 		return
@@ -147,9 +147,20 @@ func DeletePost(c *gin.Context) {
 		api.FailMsg(c, http.StatusNotFound, CodeDatabaseFail, "failed to match record or you do not have permission")
 		return
 	}
+	if err := deleteCommentbyPost(db.WithContext(c.Request.Context()), post.ID); err != nil {
+		api.FailMsg(c, http.StatusInternalServerError, CodeDatabaseFail, "failed to delete comments")
+		return
+	}
 	if err := db.WithContext(c.Request.Context()).Delete(&post).Error; err != nil {
-		api.FailMsg(c, http.StatusInternalServerError, CodeDatabaseFail, "failed to delete")
+		api.FailMsg(c, http.StatusInternalServerError, CodeDatabaseFail, "failed to delete post")
 		return
 	}
 	api.SuccessMsg(c, nil, "successfully deleted post")
+}
+
+func deleteCommentbyPost(db *gorm.DB, postID uint) error {
+	if err := db.Where("post_id = ?", postID).Delete(&models.Comment{}).Error; err != nil {
+		return err
+	}
+	return nil
 }

@@ -16,12 +16,20 @@ const (
 	CodeCookieInvalid = 1004
 )
 
-func CreateToken(userID uint, c *gin.Context) (string, error) {
-	claims := jwt.RegisteredClaims{
-		Issuer:    "cvwo_assign",
-		Subject:   fmt.Sprint(userID),
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * 10 * time.Hour)),
-		IssuedAt:  jwt.NewNumericDate(time.Now()),
+type CustomClaim struct {
+	Username string `json:"userName"`
+	jwt.RegisteredClaims
+}
+
+func CreateToken(userID uint, username string, c *gin.Context) (string, error) {
+	claims := CustomClaim{
+		Username: username,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Issuer:    "cvwo_assign",
+			Subject:   fmt.Sprint(userID),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * 10 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_KEY")))
@@ -51,7 +59,7 @@ func RequireAuth() gin.HandlerFunc {
 		}
 
 		// 2. Parse and Validate the token
-		token, err := jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, func(token *jwt.Token) (any, error) {
+		token, err := jwt.ParseWithClaims(tokenString, &CustomClaim{}, func(token *jwt.Token) (any, error) {
 			// Security Check: Ensure the alg is HMAC (HS256)
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -68,7 +76,7 @@ func RequireAuth() gin.HandlerFunc {
 		}
 
 		// 4. Extract the Claims to get the UserID
-		if claims, ok := token.Claims.(*jwt.RegisteredClaims); ok {
+		if claims, ok := token.Claims.(*CustomClaim); ok {
 			userid, err := strconv.Atoi(claims.Subject)
 			if err != nil {
 				api.FailMsg(c, http.StatusUnauthorized, 1004, "invalid id")
@@ -76,6 +84,7 @@ func RequireAuth() gin.HandlerFunc {
 			}
 			//Stores UserID as an uint to use for DB
 			c.Set("userID", uint(userid))
+			c.Set("username", claims.Username)
 			c.Next()
 		} else {
 			api.FailMsg(c, http.StatusUnauthorized, 1004, "invalid token claims")
