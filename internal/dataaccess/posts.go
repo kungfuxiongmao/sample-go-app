@@ -16,6 +16,10 @@ type DeletePost struct {
 	ID uint `json:"postId"`
 }
 
-type FindPost struct {
+type GetPost struct {
 	TopicID uint `uri:"topicid" binding:"required"`
+}
+
+type FindPost struct {
+	PostID uint `uri:"postid" binding:"required"`
 }

@@ -12,3 +12,7 @@ type CreateTopic struct {
 type DeleteTopic struct {
 	ID uint `json:"topicId"`
 }
+
+type GetTopic struct {
+	ID uint `uri:"topicid" binding:"required"`
+}

@@ -14,6 +14,10 @@ type DeleteComment struct {
 	ID uint `json:"commentId"`
 }
 
+type GetComment struct {
+	PostID uint `uri:"postid" binding:"required"`
+}
+
 type FindComment struct {
-	PostID uint `json:"postId"`
+	CommentID uint `uri:"commentid" binding:"required"`
 }
